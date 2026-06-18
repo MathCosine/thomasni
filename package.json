@@ -1,0 +1,36 @@
+{
+  "name": "mathcosine-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MathCosine — a clean, scholarly blog with LaTeX rendering, hearts, and comments.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@fontsource/newsreader": "^5.1.0",
+    "@fontsource/source-serif-4": "^5.1.0",
+    "better-sqlite3": "^11.8.1",
+    "katex": "^0.16.11",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "rehype-katex": "^7.0.1",
+    "rehype-sanitize": "^6.0.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.1",
+    "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.3"
+  }
+}
