@@ -6,9 +6,8 @@ export function Footer() {
     <footer className="site-footer">
       <div className="inner">
         <span>© {year} MathCosine</span>
-        {/* Quiet entrance to the writing desk — for the author only. */}
-        <Link href="/admin" className="write-link">
-          ✎ Write
+        <Link href="/rss.xml" className="write-link">
+          RSS
         </Link>
       </div>
     </footer>

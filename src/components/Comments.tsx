@@ -13,10 +13,9 @@ export interface RenderedComment {
 interface Props {
   slug: string;
   initialComments: RenderedComment[];
-  isAdmin: boolean;
 }
 
-export function Comments({ slug, initialComments, isAdmin }: Props) {
+export function Comments({ slug, initialComments }: Props) {
   const [comments, setComments] = useState<RenderedComment[]>(initialComments);
   const [author, setAuthor] = useState("");
   const [body, setBody] = useState("");
@@ -50,16 +49,6 @@ export function Comments({ slug, initialComments, isAdmin }: Props) {
     }
   }
 
-  async function remove(id: number) {
-    if (!window.confirm("Delete this comment?")) return;
-    const res = await fetch("/api/comments", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) setComments((cs) => cs.filter((c) => c.id !== id));
-  }
-
   return (
     <section className="comments" id="comments">
       <h2 className="section-label">
@@ -73,11 +62,6 @@ export function Comments({ slug, initialComments, isAdmin }: Props) {
           <div>
             <span className="who">{c.author}</span>
             <span className="when">{formatDate(c.created_at)}</span>
-            {isAdmin && (
-              <button type="button" className="admin-del" onClick={() => remove(c.id)}>
-                delete
-              </button>
-            )}
           </div>
           <div className="body" dangerouslySetInnerHTML={{ __html: c.html }} />
         </div>

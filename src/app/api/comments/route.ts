@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getPostBySlug, addComment, deleteComment } from "@/lib/db";
+import { getPostBySlug } from "@/lib/posts";
+import { addComment } from "@/lib/db";
 import { renderComment } from "@/lib/markdown";
-import { isAdmin } from "@/lib/auth";
 import { sameOrigin, rateLimit, clientIp } from "@/lib/security";
 
 export const runtime = "nodejs";
@@ -29,34 +29,17 @@ export async function POST(req: NextRequest) {
   }
 
   const post = getPostBySlug(slug);
-  if (!post || !post.published) {
+  if (!post || post.draft) {
     return NextResponse.json({ error: "Post not found." }, { status: 404 });
   }
 
   // A filled honeypot means a bot — accept quietly without storing anything.
   if (honeypot) return NextResponse.json({ ok: true, comment: null });
 
-  const created = addComment(post.id, author, text);
+  const created = addComment(post.slug, author, text);
   const html = await renderComment(created.body);
   return NextResponse.json({
     ok: true,
     comment: { id: created.id, author: created.author, created_at: created.created_at, html },
   });
-}
-
-export async function DELETE(req: NextRequest) {
-  if (!sameOrigin(req)) return NextResponse.json({ error: "Bad origin." }, { status: 403 });
-  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorised." }, { status: 401 });
-
-  let id = 0;
-  try {
-    const body = await req.json();
-    id = Number(body.id);
-  } catch {
-    /* empty */
-  }
-  if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
-
-  deleteComment(id);
-  return NextResponse.json({ ok: true });
 }

@@ -1,4 +1,4 @@
-import { getPublishedPosts } from "@/lib/db";
+import { getPublishedPosts } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function GET() {
       <title>${escapeXml(p.title)}</title>
       <link>${site}/posts/${p.slug}</link>
       <guid isPermaLink="true">${site}/posts/${p.slug}</guid>
-      <pubDate>${new Date(p.created_at).toUTCString()}</pubDate>
+      <pubDate>${new Date(p.date).toUTCString()}</pubDate>
       <description>${escapeXml(p.excerpt)}</description>
     </item>`,
     )

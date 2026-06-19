@@ -1,3 +1,8 @@
+---
+title: A cosine identity worth keeping
+date: 2026-06-17
+tags: trigonometry, problem-solving
+---
 Here is a small identity I keep coming back to, because the proof is shorter than the statement looks.
 
 **Claim.** For every real $\theta$,

@@ -5,10 +5,44 @@ Narrow serif column, centred LaTeX, and nothing in the way of the writing.
 
 - **Read:** a quiet home page of posts, each with full LaTeX rendering.
 - **React:** readers can leave a **heart** and write **comments** (Markdown + `$LaTeX$` allowed).
-- **Write:** scroll to the footer and follow **✎ Write** into a password-protected
-  author area with a live, two-pane Markdown/LaTeX editor.
+- **Write:** posts are plain **Markdown files in `content/posts/`**. Add a file, commit it,
+  and it appears on the site — no login, no database for content.
 
-Built with Next.js (App Router), SQLite, KaTeX, and a hand-written stylesheet — no UI framework.
+Built with Next.js (App Router), KaTeX, and a hand-written stylesheet (no UI framework).
+Hearts and comments are the only dynamic data, stored in a small SQLite file.
+
+---
+
+## Writing a post
+
+A post is one Markdown file in [`content/posts/`](content/posts) with a little
+front matter at the top:
+
+```markdown
+---
+title: A cosine identity worth keeping
+date: 2026-06-17
+tags: trigonometry, problem-solving
+# draft: true   # optional — hides it from the site
+---
+Your post body, in Markdown.
+
+Inline math like $a^2 + b^2 = c^2$, and a centred display equation:
+
+$$\int_0^1 x^2 \, dx = \frac{1}{3}.$$
+```
+
+- The **file name becomes the URL**: `content/posts/my-note.md` → `/posts/my-note`.
+- `date` controls ordering and the displayed date. `tags` is optional (comma separated).
+- Add `draft: true` to keep a file in the repo without publishing it.
+- See [`content/posts/_TEMPLATE.md`](content/posts/_TEMPLATE.md) (files starting
+  with `_` are ignored).
+
+**To publish:** commit the new file and push. Once the host redeploys (or pulls the
+new commit), the post is live — no build step to babysit and no admin screen.
+
+> Working with Claude Code? Just hand over the post (a `.md` file, or the title and
+> body) and ask it to add the file to `content/posts/` and commit it.
 
 ---
 
@@ -16,81 +50,58 @@ Built with Next.js (App Router), SQLite, KaTeX, and a hand-written stylesheet �
 
 ```bash
 npm install
-cp .env.example .env      # then edit the values (see below)
+cp .env.example .env      # optional; sensible defaults work for local dev
 npm run dev               # http://localhost:3000
 ```
 
-Open the site, scroll to the bottom, click **✎ Write**, and sign in with your
-`ADMIN_PASSWORD` to start posting.
-
 ### Environment variables
 
-| Variable         | Purpose                                                        |
-| ---------------- | -------------------------------------------------------------- |
-| `ADMIN_PASSWORD` | Password for the author area. **Required** to be able to log in. |
-| `SESSION_SECRET` | Long random string used to sign the admin session cookie.      |
-| `SITE_URL`       | Public base URL (used by the RSS feed and canonical links).    |
-| `DATABASE_PATH`  | Optional. Override the SQLite file location (default `./data/blog.db`). |
-
-Generate a session secret with:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
+| Variable        | Purpose                                                         |
+| --------------- | -------------------------------------------------------------- |
+| `SITE_URL`      | Public base URL (used by the RSS feed and canonical links).    |
+| `DATABASE_PATH` | Optional. Where the hearts/comments SQLite file lives (default `./data/blog.db`). |
 
 ---
 
 ## How it works
 
-- **Content & data** live in a single SQLite database (`./data/blog.db` by default),
-  created and seeded automatically on first run. Posts, hearts, and comments are all stored there.
-- **LaTeX** is rendered with KaTeX through a `remark` → `rehype` pipeline. Inline math
-  uses `$…$`; display math uses `$$…$$` and is centred. The same pipeline renders posts,
-  comments, and the editor preview, so the preview is faithful.
-- **Sanitisation:** all rendered HTML passes through `rehype-sanitize`, and KaTeX runs
-  with `trust: false`, so reader comments can include mathematics without opening an XSS hole.
-- **Auth** is a single shared password (`ADMIN_PASSWORD`) and a signed, HTTP-only session
-  cookie. Mutating endpoints check the session, the request origin, and basic rate limits.
+- **Content** is read from the Markdown files in `content/posts/` at request time, so
+  a new commit shows up as soon as it is deployed. Front matter is parsed with `gray-matter`.
+- **LaTeX** renders with KaTeX through a `remark` → `rehype` pipeline. Inline math uses
+  `$…$`; a whole equation on its own line in `$$…$$` is centred. The same pipeline renders
+  posts and comments.
+- **Sanitisation:** all rendered HTML passes through `rehype-sanitize`, and KaTeX runs with
+  `trust: false`, so reader comments can include mathematics without opening an XSS hole.
+- **Hearts & comments** live in SQLite (`./data/blog.db`), keyed by the post's slug.
+  Mutating endpoints check the request origin, apply rate limits, and screen a honeypot field.
 
 ### Project layout
 
 ```
-content/seed/         Markdown for the starter posts (seeded on first run)
-src/app/              Routes: home, posts/[slug], about, admin, api/*, rss.xml
-src/components/        Header, Footer, HeartButton, Comments, Editor, admin controls
-src/lib/              db (SQLite), auth, markdown/LaTeX, formatting, security helpers
+content/posts/        Your posts — one Markdown file each (this is what you edit)
+src/app/              Routes: home, posts/[slug], about, api/{hearts,comments}, rss.xml
+src/components/        Header, Footer, HeartButton, Comments
+src/lib/              posts (file reader), db (hearts/comments), markdown/LaTeX, helpers
 ```
-
----
-
-## Writing posts
-
-1. Scroll to the footer and click **✎ Write** (or go to `/admin`).
-2. Sign in with `ADMIN_PASSWORD`.
-3. **New post** → write Markdown with LaTeX on the left, watch the live preview on the right.
-4. Tick **Published** when ready, or leave it unticked to keep a private draft
-   (drafts are visible only while you are signed in).
-
-Comments can be moderated (deleted) inline on each post while signed in.
 
 ---
 
 ## Deployment
 
-This is a dynamic app with a writable database, so it wants a host that keeps a
-persistent disk and runs Node — e.g. Railway, Render, Fly.io, or a small VPS.
+Posts are static files, but hearts and comments need a writable SQLite file, so deploy to a
+host that runs Node and keeps a persistent disk — e.g. Railway, Render, Fly.io, or a small VPS.
+Connect it to this repo so each push redeploys.
 
 ```bash
 npm run build
 npm start
 ```
 
-Set `ADMIN_PASSWORD`, `SESSION_SECRET`, and `SITE_URL` in the host's environment,
-and point `DATABASE_PATH` at a path on the persistent volume.
+Set `SITE_URL` in the host's environment, and point `DATABASE_PATH` at the persistent volume.
 
-> **Serverless note:** platforms with an ephemeral/read-only filesystem (e.g. Vercel)
-> won't persist a local SQLite file between requests. To deploy there, swap the storage
-> in `src/lib/db.ts` for a hosted database (Turso/libSQL or Postgres) — the rest of the
-> app is unaffected.
+> **Serverless note:** platforms with an ephemeral/read-only filesystem (e.g. Vercel) won't
+> persist the SQLite file between requests. The posts would still render fine there; to keep
+> hearts/comments, swap the storage in `src/lib/db.ts` for a hosted database (Turso/libSQL or
+> Postgres). Everything else is unaffected.
 
 The SQLite files (`*.db`) and `.env` are git-ignored and never committed.

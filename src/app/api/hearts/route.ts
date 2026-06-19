@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getPostBySlug, toggleHeart } from "@/lib/db";
-import { VISITOR_COOKIE, newVisitorId } from "@/lib/auth";
+import { getPostBySlug } from "@/lib/posts";
+import { toggleHeart } from "@/lib/db";
+import { VISITOR_COOKIE, newVisitorId } from "@/lib/visitor";
 import { sameOrigin, rateLimit, clientIp } from "@/lib/security";
 
 export const runtime = "nodejs";
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   const post = getPostBySlug(slug);
-  if (!post || !post.published) {
+  if (!post || post.draft) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     setCookie = true;
   }
 
-  const result = toggleHeart(post.id, visitor);
+  const result = toggleHeart(post.slug, visitor);
   const res = NextResponse.json(result);
   if (setCookie) {
     res.cookies.set(VISITOR_COOKIE, visitor, {

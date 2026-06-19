@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { getPostBySlug, getComments, countHearts, hasHearted } from "@/lib/db";
+import { getPostBySlug } from "@/lib/posts";
+import { getComments, countHearts, hasHearted } from "@/lib/db";
 import { renderMarkdown, renderComment } from "@/lib/markdown";
-import { formatDate, readingTime, parseTags } from "@/lib/format";
-import { isAdmin, VISITOR_COOKIE } from "@/lib/auth";
+import { formatDate, readingTime } from "@/lib/format";
+import { VISITOR_COOKIE } from "@/lib/visitor";
 import { HeartButton } from "@/components/HeartButton";
 import { Comments } from "@/components/Comments";
 
@@ -26,26 +27,25 @@ export async function generateMetadata({
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  const admin = await isAdmin();
-  if (!post || (!post.published && !admin)) notFound();
+  if (!post) notFound();
+  // Drafts are previewable locally but hidden in production.
+  if (post.draft && process.env.NODE_ENV === "production") notFound();
 
   const html = await renderMarkdown(post.content);
 
   const store = await cookies();
   const visitor = store.get(VISITOR_COOKIE)?.value ?? "";
-  const heartCount = countHearts(post.id);
-  const hearted = hasHearted(post.id, visitor);
+  const heartCount = countHearts(post.slug);
+  const hearted = hasHearted(post.slug, visitor);
 
   const comments = await Promise.all(
-    getComments(post.id).map(async (c) => ({
+    getComments(post.slug).map(async (c) => ({
       id: c.id,
       author: c.author,
       created_at: c.created_at,
       html: await renderComment(c.body),
     })),
   );
-
-  const tags = parseTags(post.tags);
 
   return (
     <article className="page">
@@ -54,18 +54,16 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       </Link>
 
       <header className="article-header">
-        {!post.published && (
-          <p className="notice error">Draft — only you can see this while logged in.</p>
-        )}
+        {post.draft && <p className="notice error">Draft — hidden from the site in production.</p>}
         <h1 className="article-title">{post.title}</h1>
         <div className="meta">
-          <span>{formatDate(post.created_at)}</span>
+          <span>{formatDate(post.date)}</span>
           <span className="dot">·</span>
           <span>{readingTime(post.content)} min read</span>
-          {tags.length > 0 && (
+          {post.tags.length > 0 && (
             <>
               <span className="dot">·</span>
-              <span>{tags.join(", ")}</span>
+              <span>{post.tags.join(", ")}</span>
             </>
           )}
         </div>
@@ -75,7 +73,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
       <HeartButton slug={post.slug} initialCount={heartCount} initialHearted={hearted} />
 
-      <Comments slug={post.slug} initialComments={comments} isAdmin={admin} />
+      <Comments slug={post.slug} initialComments={comments} />
     </article>
   );
 }

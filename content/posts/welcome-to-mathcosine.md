@@ -1,3 +1,8 @@
+---
+title: Welcome to MathCosine
+date: 2026-06-13
+tags: meta
+---
 Welcome to **MathCosine** — a quiet corner of the internet for notes on mathematics, problem-solving, and the occasional digression.
 
 I started this blog to write things down properly. Half-remembered arguments have a way of evaporating; an idea only really becomes yours once you have explained it to someone else. Consider this my someone else.
