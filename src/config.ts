@@ -24,8 +24,7 @@ export const siteConfig = {
     repo: process.env.NEXT_PUBLIC_GISCUS_REPO || "mathcosine/thomasni",
     repoId: process.env.NEXT_PUBLIC_GISCUS_REPO_ID || "R_kgDOS-uBDg",
     category: process.env.NEXT_PUBLIC_GISCUS_CATEGORY || "Announcements",
-    // From giscus.app after you pick the "Announcements" category (looks like "DIC_kwDO…").
-    categoryId: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || "",
+    categoryId: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || "DIC_kwDOS-uBDs4C_c-5",
   },
 };
 
