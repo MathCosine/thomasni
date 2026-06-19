@@ -21,9 +21,10 @@ export const siteConfig = {
   // Paste your values below, or set the matching NEXT_PUBLIC_GISCUS_* env vars
   // (or repository Variables of the same name) in the deploy workflow.
   giscus: {
-    repo: process.env.NEXT_PUBLIC_GISCUS_REPO || "", // "owner/repo"
-    repoId: process.env.NEXT_PUBLIC_GISCUS_REPO_ID || "",
+    repo: process.env.NEXT_PUBLIC_GISCUS_REPO || "mathcosine/thomasni",
+    repoId: process.env.NEXT_PUBLIC_GISCUS_REPO_ID || "R_kgDOS-uBDg",
     category: process.env.NEXT_PUBLIC_GISCUS_CATEGORY || "Announcements",
+    // From giscus.app after you pick the "Announcements" category (looks like "DIC_kwDO…").
     categoryId: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || "",
   },
 };
