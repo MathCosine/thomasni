@@ -2,7 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - claude/jolly-knuth-i987wg
   workflow_dispatch:
 
 # Allow this workflow to publish to GitHub Pages.
