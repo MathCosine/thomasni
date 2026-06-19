@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
-import { getPostBySlug } from "@/lib/posts";
-import { getComments, countHearts, hasHearted } from "@/lib/db";
-import { renderMarkdown, renderComment } from "@/lib/markdown";
+import { getPostBySlug, getPublishedPosts } from "@/lib/posts";
+import { renderMarkdown } from "@/lib/markdown";
 import { formatDate, readingTime } from "@/lib/format";
-import { VISITOR_COOKIE } from "@/lib/visitor";
-import { HeartButton } from "@/components/HeartButton";
-import { Comments } from "@/components/Comments";
+import { Giscus } from "@/components/Giscus";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+// Pre-render one page per published post at build time (static export).
+export function generateStaticParams() {
+  return getPublishedPosts().map((p) => ({ slug: p.slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -28,24 +26,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();
-  // Drafts are previewable locally but hidden in production.
-  if (post.draft && process.env.NODE_ENV === "production") notFound();
 
   const html = await renderMarkdown(post.content);
-
-  const store = await cookies();
-  const visitor = store.get(VISITOR_COOKIE)?.value ?? "";
-  const heartCount = countHearts(post.slug);
-  const hearted = hasHearted(post.slug, visitor);
-
-  const comments = await Promise.all(
-    getComments(post.slug).map(async (c) => ({
-      id: c.id,
-      author: c.author,
-      created_at: c.created_at,
-      html: await renderComment(c.body),
-    })),
-  );
 
   return (
     <article className="page">
@@ -54,7 +36,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       </Link>
 
       <header className="article-header">
-        {post.draft && <p className="notice error">Draft — hidden from the site in production.</p>}
+        {post.draft && <p className="notice error">Draft — hidden from the published site.</p>}
         <h1 className="article-title">{post.title}</h1>
         <div className="meta">
           <span>{formatDate(post.date)}</span>
@@ -71,9 +53,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
       <div className="prose" dangerouslySetInnerHTML={{ __html: html }} />
 
-      <HeartButton slug={post.slug} initialCount={heartCount} initialHearted={hearted} />
-
-      <Comments slug={post.slug} initialComments={comments} />
+      <Giscus />
     </article>
   );
 }

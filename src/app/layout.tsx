@@ -13,16 +13,17 @@ import "./globals.css";
 
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { siteConfig } from "@/config";
 
 const site = process.env.SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site),
   title: {
-    default: "MathCosine",
-    template: "%s · MathCosine",
+    default: siteConfig.title,
+    template: `%s · ${siteConfig.title}`,
   },
-  description: "Notes on mathematics, problem-solving, and the occasional digression.",
+  description: siteConfig.description,
   alternates: {
     types: { "application/rss+xml": "/rss.xml" },
   },

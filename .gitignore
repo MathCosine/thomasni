@@ -8,6 +8,9 @@
 /out/
 next-env.d.ts
 
+# generated at build
+/public/rss.xml
+
 # production
 /build
 

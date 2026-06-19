@@ -2,17 +2,16 @@
   "name": "mathcosine-blog",
   "version": "1.0.0",
   "private": true,
-  "description": "MathCosine — a clean, scholarly blog with LaTeX rendering, hearts, and comments.",
+  "description": "MathCosine — a clean, scholarly LaTeX blog, statically exported for GitHub Pages.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "node scripts/build-feed.mjs && next build",
+    "preview": "npx --yes serve@latest out",
     "lint": "next lint"
   },
   "dependencies": {
     "@fontsource/newsreader": "^5.1.0",
     "@fontsource/source-serif-4": "^5.1.0",
-    "better-sqlite3": "^11.8.1",
     "gray-matter": "^4.0.3",
     "katex": "^0.16.11",
     "next": "^15.1.6",
@@ -28,7 +27,6 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",

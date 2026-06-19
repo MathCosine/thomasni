@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow this workflow to publish to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci
+
+      - name: Build static site
+        run: npm run build
+        env:
+          # Injected so assets resolve under the project-site subpath (/<repo>).
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+          # Optional Giscus settings — set these as repository Variables, or
+          # leave them and hard-code values in src/config.ts instead.
+          NEXT_PUBLIC_GISCUS_REPO: ${{ vars.GISCUS_REPO }}
+          NEXT_PUBLIC_GISCUS_REPO_ID: ${{ vars.GISCUS_REPO_ID }}
+          NEXT_PUBLIC_GISCUS_CATEGORY: ${{ vars.GISCUS_CATEGORY }}
+          NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.GISCUS_CATEGORY_ID }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

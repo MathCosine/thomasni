@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { withBase } from "@/config";
 
 export const metadata: Metadata = {
   title: "About",
@@ -21,12 +22,12 @@ export default function AboutPage() {
           LaTeX where the mathematics deserves it.
         </p>
         <p>
-          The writing here is meant to be read slowly. If a post is useful, leave a heart; if it is
-          wrong, or could be said better, the comments are open — and you are welcome to write
+          The writing here is meant to be read slowly. If a post is useful, leave a reaction; if it
+          is wrong, or could be said better, the comments are open — and you are welcome to write
           mathematics there too.
         </p>
         <p>
-          You can subscribe via the <Link href="/rss.xml">RSS feed</Link>.
+          You can subscribe via the <a href={withBase("/rss.xml")}>RSS feed</a>.
         </p>
       </div>
     </div>

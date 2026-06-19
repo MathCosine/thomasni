@@ -8,9 +8,8 @@ import rehypeSanitize, { defaultSchema, type Options as SanitizeSchema } from "r
 import rehypeStringify from "rehype-stringify";
 
 // Allow the markup KaTeX produces (spans carrying class + inline sizing styles)
-// to survive sanitisation, without opening the door to arbitrary HTML from
-// untrusted commenters. Raw HTML in the source is never parsed, so only
-// KaTeX-generated nodes actually make use of these allowances.
+// to survive sanitisation, without opening the door to arbitrary HTML. Raw HTML
+// in the source is never parsed, so only KaTeX-generated nodes use these.
 const schema: SanitizeSchema = {
   ...defaultSchema,
   attributes: {
@@ -21,9 +20,9 @@ const schema: SanitizeSchema = {
 };
 
 // remark-math only treats `$$` as *display* math when the fences sit on their
-// own lines. Authors (and commenters) naturally write a whole equation as
-// `$$ … $$` on a single line and expect it centred, so rewrite that case into
-// the fenced form before parsing. Code blocks are left untouched.
+// own lines. Authors naturally write a whole equation as `$$ … $$` on a single
+// line and expect it centred, so rewrite that case into the fenced form before
+// parsing. Code blocks are left untouched.
 function normalizeDisplayMath(markdown: string): string {
   const lines = markdown.split("\n");
   const out: string[] = [];
@@ -56,15 +55,10 @@ const processor = unified()
   .use(rehypeSanitize, schema)
   .use(rehypeStringify);
 
-/** Render trusted/author markdown (with LaTeX) to sanitised HTML. */
+/** Render markdown (with LaTeX) to sanitised HTML. */
 export async function renderMarkdown(markdown: string): Promise<string> {
   const file = await processor.process(normalizeDisplayMath(markdown ?? ""));
   return String(file);
-}
-
-/** Render a short comment. Same pipeline, but capped to keep KaTeX bounded. */
-export async function renderComment(markdown: string): Promise<string> {
-  return renderMarkdown((markdown ?? "").slice(0, 5000));
 }
 
 /** Build a plain-text excerpt from markdown for list/preview views. */
